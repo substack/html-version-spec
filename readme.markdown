@@ -7,7 +7,7 @@ permanent, and robust against outages, censorship, and orphaned content.
 
 # version
 
-You are viewing version 2.0.0 of this specification.
+You are viewing version 2.0.1 of this specification.
 
 Versions of this specification adhere to [semver](http://semver.org).
 
