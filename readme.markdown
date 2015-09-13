@@ -13,9 +13,9 @@ Versions of this specification adhere to [semver](http://semver.org).
 
 # overview
 
-This specification builds on existing
+This specification builds on existing work in
 [subresource integrity](http://w3c.github.io/webappsec/specs/subresourceintegrity/),
-[html link attributes](http://www.w3.org/wiki/HTML/Elements/link#HTML_Attributes)
+[link relation types for simple version navigation](http://tools.ietf.org/search/rfc5829),
 and [meta-version](https://github.com/dvorapa/meta-version)
 to provide a comprehensive versioning system for secure, signed, and permanent
 single-page web applications.
@@ -46,7 +46,7 @@ but also to support emerging new distributed protocols such as
   <head>
     <meta name="version" content="1.2.0">
     <link rel="signature" href="https://example.com/versions/1.2.0.html.sig"
-      identity="ed25519-jOT2v2uG9VFb0oGyFkGUn9w/WBwSf92HfdJZuY61brU=">
+      identity="ed25519-XIuQBrc84d+KHryxLJ4b/d0JwTV2FtnTDVuiSjRvwsA=">
     <link rel="version" href="https://example.com/versions/1.0.0.html"
       version="1.0.0" integrity="sha256-mPjSxFzbBSy+LyCVyylIf5E/7zswbvsL4D/qxCAqrjY">
     <link rel="version" version="1.0.0"
@@ -61,11 +61,12 @@ but also to support emerging new distributed protocols such as
       version="1.1.0" integrity="sha256-9VGwnCJuLbwo/N+TL1Ia9whqP8kVwEO8K0IFTUQk19o=">
     <link rel="version" version="1.1.0"
       href="ipfs:QmWMey8Dd1ZH9XWRP3d7N1oSoL35uou1GSMpBwt4UahFSD">
-    <link rel="last" href="https://example.com/versions/latest.html">
-    <link rel="last"
+    <link rel="latest-version" href="https://example.com/versions/latest.html">
+    <link rel="latest-version"
       href="magnet:?xt=urn:btih:4a533d47ec9c7d95b1ad75f576cffc641853b750">
-    <link rel="last" href="ipns:QmWJ9zRgvEvdzBPm1pshDqqFKqMXRJoHDQ4nuocHYS2REk">
-    <link rel="prev" version="1.1.0">
+    <link rel="latest-version"
+      href="ipns:QmWJ9zRgvEvdzBPm1pshDqqFKqMXRJoHDQ4nuocHYS2REk">
+    <link rel="predecessor-version" version="1.1.0">
   </head>
   <body>
     wow
@@ -135,21 +136,21 @@ and for the `example.html` file included in this specification, the contents of
 `https://example.com/versions/1.2.0.html.sig` would be:
 
 ```
-gerBksEAbycxxPN6WoNjUjWkl9r9+uwC5bWlmxR7ud5X9sr2pxY4fSJXq2pSlo/4dNVZ6ktJoP3HrErJ3+aWDA==
+Qzidki4WHWCaNLZj8TzsfnUdJ2dhWE4g1jYJXzU67ZlhwyA81tSymMsAVBNlT41l+ASM7ukZlPeaDCJ7gmV5AA==
 ```
 
-## prev link
+## predecessor-version link
 
 If there are any previous versions of the application, the current html file
-MUST include a `<link rel="prev">` element.
+MUST include a `<link rel="predecessor-version">` element.
 
-An HTML file may contain many `<link rel="prev">` elements to redundantly
-enumerate different ways to fetch the desired content, but all the hrefs should
-point at the exact same content.
+An HTML file may contain many `<link rel="predecessor-version">` elements to
+redundantly enumerate different ways to fetch the desired content, but all the
+hrefs should point at the exact same content.
 
 The attributes for this `<link>` element are:
 
-* rel - "prev" (required)
+* rel - "predecessor-version" (required)
 * href - external resource where the content can be found
 * integrity - See the section on the integrity attribute below.
 * version - if `href` is not given in this element and there is a corresponding
@@ -166,36 +167,41 @@ content-addressed can skip including a an `integrity` attribute.
 Example:
 
 ``` html
-<link rel="prev" href="https://example.com/versions/1.2.2.html"
+<link rel="predecessor-version" href="https://example.com/versions/1.2.2.html"
   integrity="sha256-x8x4WcOdpYiETf5EwK0Y5Jwa4e8Tsc7gkIwwcyyu3B0=">
 ```
 
-with a version tag:
+Example with a corresponding version tag:
 
 ``` html
-<link rel="version" href="https://example.com/versions/1.2.2.html"
+<link rel="version" version="1.2.2"
+  href="https://example.com/versions/1.2.2.html"
   integrity="sha256-x8x4WcOdpYiETf5EwK0Y5Jwa4e8Tsc7gkIwwcyyu3B0=">
-<link rel="prev" version="1.2.3">
+<link rel="predecessor-version" version="1.2.2">
 ```
 
-## last link
+## latest-version link
 
 To tell an application loader how to fetch new content, use the
-`<link rel="last">` element.
+`<link rel="latest-version">` element.
 
-Each `<link rel="last">` element points at a resource where updates may appear.
+Each `<link rel="latest-version">` element points at a resource where the latest
+version will reside.
 
-Last links use these attributes:
+Latest version links use these attributes:
 
-* rel - "last" (required)
+* rel - "latest-version" (required)
 * href - external URI where updates may appear
+* identity - identities expected to sign the returned resource.
+See the identities section below.
 
-If a `<link rel="signature">` element is present, an application loader should
-use that identity to determine if the resource in the last link `href` attribute
-is from an allowed key. If the key is not in the approved list, application
-loaders should walk the merkle DAG forward from the last link `href` to the
-current document to check for new identities in updates signed by already
-trusted identities.
+If a `<link rel="signature">` element is present and not an `identity`
+attribute, an application loader should use that identity to determine if the
+resource in the latest link `href` attribute is from an allowed key. If the key
+found in a `<link rel="signature">` or `identity` attribute is not in the
+approved list, application loaders should walk the merkle DAG forward from the
+latest link `href` to the current document to check for new identities in
+updates signed by already trusted identities.
 
 It's not necessary to check any signatures below the current document, because
 the merkle DAG structure implicitly verifies their integrity.
@@ -203,10 +209,11 @@ the merkle DAG structure implicitly verifies their integrity.
 Example:
 
 ```
-<link rel="last" href="https://example.com/versions/latest.html">
-<link rel="last"
+<link rel="latest-version" href="https://example.com/versions/latest.html">
+<link rel="latest-version"
   href="magnet:?xt=urn:btih:4a533d47ec9c7d95b1ad75f576cffc641853b750">
-<link rel="last" href="ipns:QmWJ9zRgvEvdzBPm1pshDqqFKqMXRJoHDQ4nuocHYS2REk">
+<link rel="latest-version"
+  href="ipns:QmWJ9zRgvEvdzBPm1pshDqqFKqMXRJoHDQ4nuocHYS2REk">
 ```
 
 ## version link
