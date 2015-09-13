@@ -263,6 +263,8 @@ Additional hashing algorithms may be used.
 The `identity` attribute in the elements above all use the following format.
 Identities are public keys used for signing content. Each identity in the
 identity attribute represents a key which is allowed to sign new releases.
+If any one of the enumerated public keys is valid for the signature data, the
+integrity of the document is accepted.
 
 There can be one or more identities in an `identity` attribute. Identities are
 whitespace-separated. Each identity contains the name of the public key
@@ -275,6 +277,13 @@ would be:
 ```
 ed25519-1EG6xEDUkN9Mmx8AAXfQMiUbw4uYzLUrfa52sGjSWD8=
 ```
+
+Implementors MUST support ed25519 as defined by libsodium.
+ed25519 DOES NOT refer to the format defined in the
+[orlp/supercop/ref10](https://github.com/orlp/ed25519) implementation.
+(Use the name "ed25519.supercop" to refer to this implementation.)
+
+Other cryptographic algorithms may be used.
 
 # license
 
