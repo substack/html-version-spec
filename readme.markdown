@@ -73,8 +73,9 @@ but also to support emerging new distributed protocols such as
 </html>
 ```
 
-You should inline all stylesheets, images, and javascript assets into a single
-HTML file so that versions can be tracked under a single hash.
+All external assets should either include `integrity` attributes or should be
+included inline. This way the entire document can be tracked under a single hash
+with a merkle DAG structure.
 
 # elements
 
