@@ -225,6 +225,10 @@ Once a version has been associated with some content, no other content may
 be defined for that version. Application loaders MUST treat multiple content
 mapping to the same version as integrity errors.
 
+A document doesn't need to exaustively enumerate past versions. Version info is
+intended to shortcut reading in the entire merkle DAG by traversing every `<link
+rel="prev">` element recurively, reducing the number of round-trip requests.
+
 Example:
 
 ``` html
