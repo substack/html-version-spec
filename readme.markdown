@@ -14,6 +14,7 @@ Versions of this specification adhere to [semver](http://semver.org).
 # overview
 
 This specification builds on existing
+[subresource integrity](http://w3c.github.io/webappsec/specs/subresourceintegrity/),
 [html link attributes](http://www.w3.org/wiki/HTML/Elements/link#HTML_Attributes)
 and [meta-version](https://github.com/dvorapa/meta-version)
 to provide a comprehensive versioning system for secure, signed, and permanent
@@ -27,9 +28,9 @@ interface, as an example.
 
 HTML files, once published, are immutable. Some content-addressed delivery
 protocols implicitly convey the hash of the content in their addressing scheme,
-but for other delivery mechanisms like http there are `hash` and `signature`
-attributes to add additional verification. Embedded content hashes create a
-merkle DAG structure that protects against tampering and guards against
+but for other delivery mechanisms like http there are `integrity` and
+`signature` attributes to add additional verification. Embedded content hashes
+create a merkle DAG structure that protects against tampering and guards against
 availability outages and orphaned content. Application loaders can query
 secondary archives and mirrors by hash when a primary resource is unavailable.
 
@@ -45,19 +46,19 @@ but also to support emerging new distributed protocols such as
   <head>
     <meta name="version" content="1.2.0">
     <link rel="signature" href="https://example.com/versions/1.2.0.html.sig"
-      identity="1EG6xEDUkN9Mmx8AAXfQMiUbw4uYzLUrfa52sGjSWD8=.ed25519">
+      identity="ed25519-jOT2v2uG9VFb0oGyFkGUn9w/WBwSf92HfdJZuY61brU=">
     <link rel="version" href="https://example.com/versions/1.0.0.html"
-      version="1.0.0" hash="mPjSxFzbBSy+LyCVyylIf5E/7zswbvsL4D/qxCAqrjY=.sha256">
+      version="1.0.0" integrity="sha256-mPjSxFzbBSy+LyCVyylIf5E/7zswbvsL4D/qxCAqrjY">
     <link rel="version" version="1.0.0"
       href="magnet:?xt=urn:btih:4822271aa656ba6913a14edb117d3c4dc50f1209">
     <link rel="version" href="https://example.com/versions/1.0.1.html"
-      version="1.0.1" hash="Qra3bKdpoprvRqkTF96gWOa0dPkA8MHYxOJqVsvkzIY=.sha256">
+      version="1.0.1" integrity="sha256-Qra3bKdpoprvRqkTF96gWOa0dPkA8MHYxOJqVsvkzIY=">
     <link rel="version" version="1.0.1"
       href="magnet:?xt=urn:btih:d0320ebba035cc86526baae771da14912895e113">
     <link rel="version" version="1.0.1"
       href="ipfs:QmNcojAWDNwf1RZsPsG2ABvK4FVs7yq4iwSrKaMdPwV3Sh">
     <link rel="version" href="https://example.com/versions/1.1.0.html"
-      version="1.1.0" hash="9VGwnCJuLbwo/N+TL1Ia9whqP8kVwEO8K0IFTUQk19o=.sha256">
+      version="1.1.0" integrity="sha256-9VGwnCJuLbwo/N+TL1Ia9whqP8kVwEO8K0IFTUQk19o=">
     <link rel="version" version="1.1.0"
       href="ipfs:QmWMey8Dd1ZH9XWRP3d7N1oSoL35uou1GSMpBwt4UahFSD">
     <link rel="last" href="https://example.com/versions/latest.html">
@@ -126,14 +127,14 @@ signature might be:
 
 ``` html
 <link rel="signature" href="https://example.com/versions/1.2.0.html.sig"
-  identity="oas7Ee6g2ck+OI8guqEFxcJehl410rqJiXu2EC/sTJI=.ed25519">
+  identity="ed25519-jOT2v2uG9VFb0oGyFkGUn9w/WBwSf92HfdJZuY61brU=">
 ```
 
 and for the `example.html` file included in this specification, the contents of
 `https://example.com/versions/1.2.0.html.sig` would be:
 
 ```
-typjuIofnKOxmrcDGsuLtej5mpPJFY0IF2zJ00Jj6cjQQGOFrSY/50DL87CxHzfl+GShLv/g3wxII7Ng0Q0rAQ==
+gerBksEAbycxxPN6WoNjUjWkl9r9+uwC5bWlmxR7ud5X9sr2pxY4fSJXq2pSlo/4dNVZ6ktJoP3HrErJ3+aWDA==
 ```
 
 ## prev link
@@ -149,31 +150,30 @@ The attributes for this `<link>` element are:
 
 * rel - "prev" (required)
 * href - external resource where the content can be found
-* hash - whitespace-separated list of base64-encoded hashes. See the section on
-hashing below.
+* integrity - See the section on the integrity attribute below.
 * version - if `href` is not given in this element and there is a corresponding
 `<link rel="version">` defined elsewhere in the document, specifying a `version`
-attribute will populate the `href` and `hash` attributes from the found
+attribute will populate the `href` and `integrity` attributes from the found
 versions.
 
-Either `hash` or `version` are required. It's OK to have both.
+Either `integrity` or `version` are required. It's OK to have both.
 
 Protocols without implicit content verification such as http are strongly
-recommended to use the optional `hash` attribute. Other protocols which are
-content-addressed can skip including a `hash` attribute.
+recommended to use the optional `integrity` attribute. Other protocols which are
+content-addressed can skip including a an `integrity` attribute.
 
 Example:
 
 ``` html
 <link rel="prev" href="https://example.com/versions/1.2.2.html"
-  hash="x8x4WcOdpYiETf5EwK0Y5Jwa4e8Tsc7gkIwwcyyu3B0=.sha256">
+  integrity="sha256-x8x4WcOdpYiETf5EwK0Y5Jwa4e8Tsc7gkIwwcyyu3B0=">
 ```
 
 with a version tag:
 
 ``` html
 <link rel="version" href="https://example.com/versions/1.2.2.html"
-  hash="x8x4WcOdpYiETf5EwK0Y5Jwa4e8Tsc7gkIwwcyyu3B0=.sha256">
+  integrity="sha256-x8x4WcOdpYiETf5EwK0Y5Jwa4e8Tsc7gkIwwcyyu3B0=">
 <link rel="prev" version="1.2.3">
 ```
 
@@ -216,8 +216,7 @@ with a `<link rel="version">` element and these attributes:
 * rel - "version" (required)
 * version - semver-compatible version string (required)
 * href - external resource where the content can be found
-* hash - whitespace-separated list of base64-encoded hashes. See the section on
-hashing below.
+* integrity - See the section on the integrity attribute below.
 
 There can be multiple `<link rel="version">` tags for the same version and
 content, but different hrefs.
@@ -233,36 +232,31 @@ Example:
 
 ``` html
 <link rel="version" href="https://example.com/versions/1.0.0.html"
-  version="1.0.0" hash="mPjSxFzbBSy+LyCVyylIf5E/7zswbvsL4D/qxCAqrjY=.sha256">
+  version="1.0.0" integrity="sha256-mPjSxFzbBSy+LyCVyylIf5E/7zswbvsL4D/qxCAqrjY=">
 <link rel="version" version="1.0.0"
   href="magnet:?xt=urn:btih:4822271aa656ba6913a14edb117d3c4dc50f1209">
 ```
 
-# hash attribute
+# integrity attribute
 
-The `hash` attribute in the elements above all use the following format.
+The format of the `integrity` attribute is defined in the
+[subresource integrity specification](http://w3c.github.io/webappsec/specs/subresourceintegrity/#the-integrity-attribute).
 
-There can be one or more hashes in a `hash` attribute. Hashes are
-whitespace-separated. Each hash contains the digest content encoded in base64
-followed by a literal dot (`"."`) followed by the hash algorithm name.
+To briefly summarize the most common use case, integrity data begins with an
+algorithm name followed by a dash followed by a base64 encoded digest.
 
 For example, using sha256, the string "test" becomes:
 
 ```
-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=.sha256
+sha256-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=
 ```
 
-Application loaders should consider implementing these hash suffixes:
+Multiple hashes may be specified in the same integrity attribute value,
+whitespace-separated. This is useful to gracefully upgrade to newer hashing
+algorithms with a fallback for older clients.
 
-* sha1
-* sha256
-* sha512
-* sha3
-* blake2b
-* blake2s
-* [multihash](https://github.com/jbenet/multihash)
-
-As better hashes are invented, this list should grow.
+The specification [requires that sha256, sha512, and sha384 are supported](http://w3c.github.io/webappsec/specs/subresourceintegrity/#cryptographic-hash-functions).
+Additional hashing algorithms may be used.
 
 # identity attribute
 
@@ -271,14 +265,15 @@ Identities are public keys used for signing content. Each identity in the
 identity attribute represents a key which is allowed to sign new releases.
 
 There can be one or more identities in an `identity` attribute. Identities are
-whitespace-separated. Each identity contains a base64-encoded public key
-followed by a literal dot (`"."`) followed by the name of the public key format.
+whitespace-separated. Each identity contains the name of the public key
+algorithm name followed by a literal dash (`"-"`) followed by the
+base64-encoded public key data.
 
 For example, a public key generated from libsodium's `crypto_sign_keypair()`
 would be:
 
 ```
-1EG6xEDUkN9Mmx8AAXfQMiUbw4uYzLUrfa52sGjSWD8=.ed25519
+ed25519-1EG6xEDUkN9Mmx8AAXfQMiUbw4uYzLUrfa52sGjSWD8=
 ```
 
 # license
