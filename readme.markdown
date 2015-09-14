@@ -141,7 +141,7 @@ Qzidki4WHWCaNLZj8TzsfnUdJ2dhWE4g1jYJXzU67ZlhwyA81tSymMsAVBNlT41l+ASM7ukZlPeaDCJ7
 
 ## predecessor-version link
 
-If there are any previous versions of the application, the current html file
+If there are any previous versions of the application, the current HTML file
 MUST include a `<link rel="predecessor-version">` element.
 
 An HTML file may contain many `<link rel="predecessor-version">` elements to
