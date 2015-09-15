@@ -46,7 +46,7 @@ but also to support emerging new distributed protocols such as
   <head>
     <meta name="version" content="1.2.0">
     <link rel="signature" href="https://example.com/versions/1.2.0.html.sig"
-      identity="ed25519-XIuQBrc84d+KHryxLJ4b/d0JwTV2FtnTDVuiSjRvwsA=">
+      integrity="ed25519-XIuQBrc84d+KHryxLJ4b/d0JwTV2FtnTDVuiSjRvwsA=">
     <link rel="version" href="https://example.com/versions/1.0.0.html"
       version="1.0.0" integrity="sha256-mPjSxFzbBSy+LyCVyylIf5E/7zswbvsL4D/qxCAqrjY">
     <link rel="version" version="1.0.0"
@@ -111,8 +111,7 @@ document contents.
 
 * rel - "signature" (required)
 * href - external resource where the detached signature data can be found
-* identity - whitespace-separated list of public keys allowed to sign updates.
-See the identities section below.
+* integrity - See the integrity section below.
 
 The content of the signature payload at `href` depends on the cryptographic
 algorithms in use. Base64 is recommended to avoid binary encoding issues.
@@ -129,14 +128,14 @@ signature might be:
 
 ``` html
 <link rel="signature" href="https://example.com/versions/1.2.0.html.sig"
-  identity="ed25519-jOT2v2uG9VFb0oGyFkGUn9w/WBwSf92HfdJZuY61brU=">
+  integrity="ed25519-jOT2v2uG9VFb0oGyFkGUn9w/WBwSf92HfdJZuY61brU=">
 ```
 
 and for the `example.html` file included in this specification, the contents of
 `https://example.com/versions/1.2.0.html.sig` would be:
 
 ```
-Qzidki4WHWCaNLZj8TzsfnUdJ2dhWE4g1jYJXzU67ZlhwyA81tSymMsAVBNlT41l+ASM7ukZlPeaDCJ7gmV5AA==
+BzVpYkSHataBHlDeABgMUL3ohzjJQSxnfilPbCmFLtY+vEAJDHvRjp6ACfIEZI4CgXoSW09wjnPEQuepCqG0Cg==
 ```
 
 ## predecessor-version link
@@ -192,19 +191,11 @@ The latest version links use these attributes:
 
 * rel - "latest-version" (required)
 * href - external URI where updates may appear
-* identity - identities expected to sign the returned resource.
-See the identities section below.
+* integrity - See the integrity section below.
 
-If a `<link rel="signature">` element is present and not an `identity`
-attribute, an application loader should use that identity to determine if the
-resource in the latest link `href` attribute is from an allowed key. If the key
-found in a `<link rel="signature">` or `identity` attribute is not in the
-approved list, application loaders should walk the merkle DAG forward from the
-latest link `href` to the current document to check for new identities in
-updates signed by already trusted identities.
-
-It's not necessary to check any signatures below the current document, because
-the merkle DAG structure implicitly verifies their integrity.
+If `integrity` refers to any public key identities, it's not necessary to check
+any signatures below the current document, because the merkle DAG structure
+implicitly verifies their integrity.
 
 Example:
 
@@ -263,35 +254,27 @@ Multiple hashes may be specified in the same integrity attribute value,
 whitespace-separated. This is useful to gracefully upgrade to newer hashing
 algorithms with a fallback for older clients.
 
-The specification [requires that sha256, sha512, and sha384 are supported](http://w3c.github.io/webappsec/specs/subresourceintegrity/#cryptographic-hash-functions).
+The subresource integrity specification
+[requires that sha256, sha512, and sha384 are supported](http://w3c.github.io/webappsec/specs/subresourceintegrity/#cryptographic-hash-functions).
 Additional hashing algorithms may be used.
 
-# identity attribute
+This specification also requires support for "ed25519" signing keys, as defined
+by [libsodium](http://doc.libsodium.org/)'s `crypto_sign_keypair` and
+`crypto_sign_detached` functions.
 
-The `identity` attribute in the elements above all use the following format.
-Identities are public keys used for signing content. Each identity in the
-identity attribute represents a key which is allowed to sign new releases.
-If any one of the enumerated public keys is valid for the signature data, the
-integrity of the document is accepted.
-
-There can be one or more identities in an `identity` attribute. Identities are
-whitespace-separated. Each identity contains the name of the public key
-algorithm name followed by a literal dash (`"-"`) followed by the
-base64-encoded public key data.
-
-For example, a public key generated from libsodium's `crypto_sign_keypair()`
-would be:
+Some protocols implicitly verify signing keys through addressing, but for HTTP,
+servers should use [rfc6249](http://tools.ietf.org/html/rfc6249#section-5.1).
+For an ed25519 key, an HTTP server response header might look like:
 
 ```
-ed25519-1EG6xEDUkN9Mmx8AAXfQMiUbw4uYzLUrfa52sGjSWD8=
+Link: <http://example.com/whatever.sig>; rel=describedby; type="application/ed25519-signature"
 ```
 
-Implementors MUST support ed25519 as defined by libsodium.
-ed25519 DOES NOT refer to the format defined in the
-[orlp/supercop/ref10](https://github.com/orlp/ed25519) implementation.
-(Use the name "ed25519.supercop" to refer to this implementation.)
+Instead of a URL, an inline signature might be used:
 
-Other cryptographic algorithms may be used.
+```
+Link: <data:application/ed25519-signature;base64,BzVpYkSHataBHlDeABgMUL3ohzjJQSxnfilPbCmFLtY+vEAJDHvRjp6ACfIEZI4CgXoSW09wjnPEQuepCqG0Cg==>
+```
 
 # license
 
